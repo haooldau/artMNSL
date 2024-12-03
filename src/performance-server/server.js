@@ -300,7 +300,7 @@ app.put('/api/performances/:id', upload.single('poster'), async (req, res) => {
       });
     }
 
-    // 构�� SQL 更新语句
+    // 构 SQL 更新语句
     const fields = Object.keys(data);
     const values = Object.values(data);
     const sql = `
@@ -429,11 +429,24 @@ async function checkAndCreateTable() {
 app.get('/api/test-db', async (req, res) => {
   try {
     const connection = await pool.getConnection();
-    console.log('数据库连接测试成功');
+    // 添加响应头，防止缓存
+    res.set({
+      'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+      'Expires': '-1',
+      'Pragma': 'no-cache'
+    });
+    
+    // 执行简单的查询测试
+    const [testResult] = await connection.query('SELECT 1 as test');
+    
+    console.log('数据库连接测试成功', testResult);
     connection.release();
+    
     res.json({ 
       success: true, 
       message: '数据库连接成功',
+      test: testResult,
+      timestamp: new Date().toISOString(),
       config: {
         host: dbConfig.host,
         port: dbConfig.port,
@@ -447,6 +460,7 @@ app.get('/api/test-db', async (req, res) => {
       success: false, 
       message: '数据库连接失败',
       error: error.message,
+      timestamp: new Date().toISOString(),
       config: {
         host: dbConfig.host,
         port: dbConfig.port,

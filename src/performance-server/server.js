@@ -11,7 +11,7 @@ const app = express();
 
 // 启用 CORS 和 JSON 解析
 app.use(cors({
-  origin: ['http://localhost:3002', 'http://localhost:3000'],
+  origin: ['http://localhost:3002', 'http://localhost:3000', 'https://*.zeabur.app'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
@@ -300,7 +300,7 @@ app.put('/api/performances/:id', upload.single('poster'), async (req, res) => {
       });
     }
 
-    // 构建 SQL 更新语句
+    // 构�� SQL 更新语句
     const fields = Object.keys(data);
     const values = Object.values(data);
     const sql = `
@@ -424,3 +424,35 @@ async function checkAndCreateTable() {
     throw error;
   }
 }
+
+// 添加在其他路由之前
+app.get('/api/test-db', async (req, res) => {
+  try {
+    const connection = await pool.getConnection();
+    console.log('数据库连接测试成功');
+    connection.release();
+    res.json({ 
+      success: true, 
+      message: '数据库连接成功',
+      config: {
+        host: dbConfig.host,
+        port: dbConfig.port,
+        database: dbConfig.database,
+        user: dbConfig.user
+      }
+    });
+  } catch (error) {
+    console.error('数据库连接测试失败:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: '数据库连接失败',
+      error: error.message,
+      config: {
+        host: dbConfig.host,
+        port: dbConfig.port,
+        database: dbConfig.database,
+        user: dbConfig.user
+      }
+    });
+  }
+});
